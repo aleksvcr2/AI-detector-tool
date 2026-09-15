@@ -4,7 +4,7 @@ A local, inspectable stylometric bench for the question "was this document writt
 
 It reads a file in your browser, measures **41 stylometric parameters** across six families, and reports each one next to the reference band where unassisted human prose usually lands. Nothing is uploaded, no API key is needed, and there is no size ceiling: the file is parsed and measured in the tab, then forgotten when you close it.
 
-Works in **English, Spanish, Portuguese and French**. The result is a single **machine-style percentage** with a confidence interval that widens honestly on short samples.
+Works in **English, Spanish, Portuguese and French**. It opens with a plain-language verdict ("This reads like a person wrote it") and a **human / AI percentage split**, then shows every measurement that produced it. The confidence interval widens honestly on short samples, and documents that are not really prose are flagged as unscorable.
 
 ![Intake screen: language selector, drop zone, reference specimens in English and Spanish, and the six parameter families](docs/screenshot.png)
 
@@ -109,7 +109,8 @@ Adding a language means writing one file in `src/engine/languages/`, registering
 4. **Hold what cannot be trusted.** Parameters needing a bigger sample than the specimen gives (Zipf slope under 600 words, repeated 5-grams under 300, readability σ without three real paragraphs, and so on) are measured and displayed but **held neutral**, with weight zero. They are not allowed to invent evidence.
 5. **Combine.** A weighted mean of the clamped deviations becomes a logit, then `index = σ(1.55 × logit)` on 0–1.
 6. **Bound it.** The 95% interval half-width is `0.52 / √(1 + words/220) + 0.035`, so short samples visibly refuse to commit.
-7. **Report it.** The index is presented as a percentage (`index × 100`), with the 0–1 value kept in the copyable report.
+7. **Report it.** The index is presented as a percentage (`index × 100`) and its human complement, with the 0–1 value kept in the copyable report.
+8. **Check eligibility.** Bulleted lines, tiny paragraphs, sentence fragments and missing terminal punctuation are counted. Two or more symptoms marks the document as non-prose: outlines and checklists score human almost automatically, whoever wrote them, so the app says so instead of letting the number stand.
 
 ### The surprisal model
 
@@ -194,9 +195,10 @@ Click any row in the app for the reasoning behind that parameter, the observed v
 
 ## Reading the output
 
-![Report screen: Spanish specimen scored 82% machine-style, with sentence stain plate, chart recorder and deviation ladder](docs/screenshot-report.png)
+![Report screen: plain-language verdict with a 21% human / 79% AI split, sentence stain plate, chart recorder and deviation ladder](docs/screenshot-report.png)
 
-- **Machine-style score** — a percentage with a sample-size confidence interval and a plain-language band, from "consistent with human authorship" to "consistent with machine generation".
+- **The short version** — one sentence, a human/AI percentage split, and a plain statement of how much the sample can bear. If the document is a list rather than prose, this is where it says to ignore the number.
+- **Machine-style score** — the same percentage with a sample-size confidence interval and a plain-language band, from "consistent with human authorship" to "consistent with machine generation".
 - **Sentence stain plate** — every sentence tinted by its own score; hover for its word count, surprisal, deviation from the document mean, and marker hits. Red underline marks a register-marker phrase.
 - **Chart recorder** — surprisal (or sentence length) per sentence against the human band, with the document's own mean. The flat-versus-jagged read is the fastest signal in the whole app.
 - **Deviation ladder** — all 41 parameters as ticks on one rail, grouped by family, with held-neutral rows called out.
@@ -217,8 +219,9 @@ src/
       en.js es.js pt.js fr.js
   ui/
     Intake.jsx         drop zone, paste mode, progress, specimen buttons
-    Verdict.jsx        index, interval, corpus stats, report builder
+    Verdict.jsx        score, interval, language, corpus stats, report builder
     Trace.jsx          chart recorder
+    PlainReading.jsx   one-sentence verdict, human/AI split, shape warning
     Ladder.jsx         deviation ladder
     Plate.jsx          sentence stain plate
     Findings.jsx       drivers, held-neutral list, marker hits, raw values

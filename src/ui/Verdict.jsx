@@ -119,6 +119,14 @@ function buildReport(r, source) {
   L.push(`specimen: ${source || "untitled"}`);
   L.push(`generated: ${new Date().toISOString()}`);
   L.push("");
+  L.push(`PLAIN READING: ${r.humanPercent}% human / ${r.percent}% AI — ${b.label.toLowerCase()}`);
+  if (!r.shape.prose) {
+    L.push("");
+    L.push("!! DOCUMENT SHAPE WARNING: this is a list or outline, not flowing prose");
+    L.push(`   (${r.shape.reasons.join(", ")}). Text shaped like this scores human`);
+    L.push("   almost automatically, whoever wrote it. The score above is not usable.");
+  }
+  L.push("");
   L.push(`MACHINE-STYLE SCORE: ${r.percent}%   (95% CI ${Math.round(Math.max(0, r.index - r.half) * 100)}%–${Math.round(Math.min(1, r.index + r.half) * 100)}%)`);
   L.push(`reading: ${b.label}`);
   L.push(`sample reliability: ${r.reliability}`);

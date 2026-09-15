@@ -40,6 +40,7 @@ import { analyze, SIGNAL_SPEC } from "./engine/analyze.js";
 import { SUPPORTED } from "./engine/languages/index.js";
 import { extractText } from "./engine/extract.js";
 import Intake from "./ui/Intake.jsx";
+import PlainReading from "./ui/PlainReading.jsx";
 import Verdict from "./ui/Verdict.jsx";
 import Trace from "./ui/Trace.jsx";
 import Ladder from "./ui/Ladder.jsx";
@@ -126,6 +127,7 @@ export default function App() {
                 <Plate report={report} />
               </div>
               <div className="order-1 space-y-6 lg:order-2 lg:sticky lg:top-6">
+                <PlainReading report={report} />
                 <Verdict report={report} source={source} />
                 <Trace report={report} />
               </div>

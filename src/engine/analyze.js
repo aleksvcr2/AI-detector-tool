@@ -558,11 +558,32 @@ export async function analyze(raw, onProgress = () => {}, opts = {}) {
     foundRegister.sort((a, b) => b[1] - a[1]);
   }
 
+  // Is this document flowing prose at all? Fragment-heavy outlines, tables and
+  // checklists score human almost automatically, because every fragment reads
+  // as a burst of variation. Say so instead of letting the number stand alone.
+  const fragmentRate = shareSent(lens.filter((n) => n < 6).length);
+  const unpunctuated = shareSent(rows.length ? sentRows.filter((r) => !/[.!?…][")'’”]*$/.test(r.text.trim())).length : 0);
+  const wordsPerPara = paraLens.length ? mean(paraLens) : totalWords;
+  // Real hand-typed notes are full of short sentences, so no single symptom is
+  // enough: it takes two, or an overwhelming one, to call a document ineligible.
+  const shape = (() => {
+    const reasons = [];
+    if (raws.listRate > 0.3) reasons.push(`${Math.round(raws.listRate * 100)}% of lines are bulleted or numbered`);
+    if (wordsPerPara < 12 && paras.length > 8) reasons.push(`paragraphs average only ${wordsPerPara.toFixed(0)} words`);
+    if (fragmentRate > 0.42) reasons.push(`${Math.round(fragmentRate * 100)}% of sentences are under six words`);
+    if (unpunctuated > 0.5) reasons.push(`${Math.round(unpunctuated * 100)}% of lines end without punctuation`);
+    const overwhelming = raws.listRate > 0.6 || (wordsPerPara < 8 && paras.length > 12);
+    if (reasons.length >= 2 || overwhelming) return { prose: false, reasons, severity: "high" };
+    return { prose: true, reasons };
+  })();
+
   onProgress({ phase: "Done", pct: 1 });
 
   return {
     index,
     percent: Math.round(index * 100),
+    humanPercent: 100 - Math.round(index * 100),
+    shape,
     half, logit, signals, families, rows,
     language: {
       code: L.code,
