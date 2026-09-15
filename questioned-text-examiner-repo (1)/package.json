@@ -1,0 +1,25 @@
+{
+  "name": "questioned-text-examiner",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A local, inspectable stylometric bench for reviewing whether a document reads as machine-generated.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "@vitejs/plugin-react": "^4.6.0",
+    "tailwindcss": "^4.1.11",
+    "vite": "^7.0.0",
+    "wrangler": "^4.0.0"
+  }
+}
